@@ -13,6 +13,7 @@ Support from Telemac to provide the list of Selafin variables [has been asked bu
 * Check that the files are actually close to be compliant with the standards. At the moment it seems functional but proper testing is needed.
 * add options to optimise the zarr and the xarray datasets (chunks and compression)
 * Make the logger to display the informations of progress
+* Make the crs / projection handling as a dictionary parameter to send to the class T3D_Xr
 ## Usage
 
 ``` python
