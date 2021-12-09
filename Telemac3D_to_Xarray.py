@@ -86,7 +86,6 @@ class T3D_Xr:
                     memory_limit=memory_limit)
 
             self.name = name if name is not None else filename
-            # self.timer_start("open dataset")
             # logger.info('Opening dataset: %s' % filename)
             self.slf = Selafin(filename)
 
@@ -103,7 +102,7 @@ class T3D_Xr:
                 'face_node_connectivity': "face_nodes" ,
                 'face_dimension': 'face',
                 }
-            # CF conventions
+            # CF conventions for projections
             self.ds['crs']=0
             self.ds['crs'].attrs={
                 'grid_mapping_name':"WGS 84 / UTM zone 30N",
@@ -169,7 +168,7 @@ class T3D_Xr:
                     'start_index': 0})
 
             self.variables, self.var_idx = vardic(self.slf.varnames)
-            # populate the variables
+            # logger.info('populate the variables')
             for i in range(len(self.var_idx)):
                 buff= np.empty((len(self.times), self.slf.nplan, self.slf.npoin2),
                     dtype= 'float32')
@@ -179,18 +178,11 @@ class T3D_Xr:
                 unit=self.slf.varunits[i].strip() # <= match it with CF
                 self.ds[self.variables[i]]=(('time','siglay','node'),buff,
                                         {'units':unit,
+                                        'standard_name':self.variables[i],
                                         'grid_mapping' : 'crs'})
-            # correct sea-floor sea_floor_depth_below_sea_level
-
-            # self.end_time = self.times[-1]
-            # self.altitude_ID=np.array(self.slf.varindex)[np.array( \
-            #                     self.slf.varnames)=='ELEVATION Z     '].tolist()
-            # self.meshID=(np.arange(self.slf.nplan)[:,None] \
-            #              *self.slf.npoin2).astype(int)
-
-
-            # self.timer_end("build index")
-            # self.timer_end("open dataset")
+            # logger.info('Xarray dataset built')
 
     def write_array(self, filename):
+        # logger.info('Writting Xarray dataset to zarr')
         self.ds.to_zarr(filename)
+        # logger.info('zarr store completed')
