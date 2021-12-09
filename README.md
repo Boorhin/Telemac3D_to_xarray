@@ -12,6 +12,7 @@ Support from Telemac to provide the list of Selafin variables [has been asked bu
 (http://www.opentelemac.org/index.php/kunena/scripts/13550-mapping-telemac3d-variables-into-cf-compliant-variables).
 * Check that the files are actually close to be compliant with the standards. At the moment it seems functional but proper testing is needed.
 * add options to optimise the zarr and the xarray datasets (chunks and compression)
+* Make the logger to display the informations of progress
 ## Usage
 
 ``` python
