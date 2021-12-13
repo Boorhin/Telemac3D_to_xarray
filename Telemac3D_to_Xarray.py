@@ -1,7 +1,7 @@
 import numpy as np
 from datetime import datetime, timedelta
 import sys, os, logging
-from dask.distributed import Client
+from dask.array import from_array
 logger = logging.getLogger(__name__)
 import xarray as xr
 
@@ -23,8 +23,8 @@ except ImportError:
         )
 
 class T3D_Xr:
-    def __init__(self, filename=None, name=None, start_time=None, n_workers=8,
-                threads=2, memory_limit='1GB'):
+    def __init__(self, infile=None, outfile=None, name=None, start_time=None):
+                # , n_workers=8, threads=2, memory_limit='1GB'):
             def vardic(vars_slf):
                 """
                 Match the selafin variables from Telemac 3D to the variables used in
@@ -41,7 +41,7 @@ class T3D_Xr:
                     'SALINITY        ': 'sea_water_salinity',
                     'NUZ FOR VELOCITY': 'ocean_vertical_diffusivity',
                     'NUX FOR VELOCITY': 'horizontal_diffusivity',
-                    'ELEVATION Z     ': 'Altitude',
+                    'ELEVATION Z     ': 'altitude',
                 }
 
                 No_OD_equiv = {
@@ -80,14 +80,15 @@ class T3D_Xr:
                     'standard_name_vocabulary': 'CF-1.6',
                     'history': 'Created ' + str(datetime.now()),
                     'source': 'Telemac 3D',
+                    'CoordinateSystem': "Cartesian"
                     },)
 
-            client = Client(n_workers=n_workers, threads_per_worker=threads,
-                    memory_limit=memory_limit)
+            # client = Client(n_workers=n_workers, threads_per_worker=threads,
+            #         memory_limit=memory_limit)
 
-            self.name = name if name is not None else filename
+            self.name = name if name is not None else infile
             # logger.info('Opening dataset: %s' % filename)
-            self.slf = Selafin(filename)
+            self.slf = Selafin(infile)
 
             self.ds=create_array()
             self.ds.attrs['title']= self.slf.title
@@ -166,20 +167,27 @@ class T3D_Xr:
                     'cf_role': "volume_node_connectivity",
                     'long_name': "Maps every volume to its corner nodes.",
                     'start_index': 0})
+            #write zarr before populating variables
 
+            # initialise the variable
             self.variables, self.var_idx = vardic(self.slf.varnames)
-            # logger.info('populate the variables')
             for i in range(len(self.var_idx)):
-                buff= np.empty((len(self.times), self.slf.nplan, self.slf.npoin2),
-                    dtype= 'float32')
-                for t in range(len(self.times)):
-                    buff[t]=self.slf.get_variables_at(t,[i]). \
-                        reshape(self.slf.nplan,-1)
-                unit=self.slf.varunits[i].strip() # <= match it with CF
-                self.ds[self.variables[i]]=(('time','siglay','node'),buff,
-                                        {'units':unit,
-                                        'standard_name':self.variables[i],
-                                        'grid_mapping' : 'crs'})
+                unit=self.slf.varunits[self.var_idx[i]].strip()
+                self.ds[self.variables[i]]=(('time','siglay','node'),
+                        np.zeros((len(times), self.slf.nplan, self.slf.npoin2)),
+                        {'units':unit,
+                        'standard_name':var,
+                        'grid_mapping' : 'crs'})
+            self.ds.to_zarr(outfile, mode='a')
+            # logger.info('populate the variables')
+            for t in range(len(self.times)):
+                buff= from_array(self.slf.get_variables_at(t,var_idx.tolist()),
+                    chunks=(len(self.variables),self.slf.npoin2))
+                for i in range(len(self.var_idx)):
+                    self.ds[self.variables[i]].isel(time=t).values+=buff[i] \
+                        .compute().reshape(self.slf.nplan,-1)
+                self.ds.isel(time=t).to_zarr(outfile,
+                                    region={"time": t})
             # logger.info('Xarray dataset built')
 
     def write_array(self, filename):
