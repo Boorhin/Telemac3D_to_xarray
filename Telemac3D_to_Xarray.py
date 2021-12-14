@@ -147,11 +147,13 @@ class T3D_Xr:
                                 'units':'m',
                                 'standard_name': 'projection_x_coordinate',
                                 'axis': 'X',
+                                'grid_mapping' : 'crs'
                                 })
             self.ds.coords['node_y']=(['node'], self.slf.meshy,{
                                 'units':'m',
                                 'standard_name': 'projection_y_coordinate',
                                 'axis': 'Y',
+                                'grid_mapping' : 'crs'
                                 })
 
             self.ds.coords['layer']=('layer', range(self.slf.nplan))
@@ -173,11 +175,10 @@ class T3D_Xr:
             self.variables, self.var_idx = vardic(self.slf.varnames)
             for i in range(len(self.var_idx)):
                 unit=self.slf.varunits[self.var_idx[i]].strip()
-                self.ds[self.variables[i]]=(('time','siglay','node'),
+                self.ds[self.variables[i]]=(('time','layer','node'),
                         np.zeros((len(times), self.slf.nplan, self.slf.npoin2)),
                         {'units':unit,
-                        'standard_name':var,
-                        'grid_mapping' : 'crs'})
+                        'standard_name':var})
             self.ds.to_zarr(outfile, mode='a')
             # logger.info('populate the variables')
             for t in range(len(self.times)):
