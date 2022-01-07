@@ -22,8 +22,7 @@ import Telemac3D_to_Xarray
 slf_file= 'somefile.slf'
 name = 'overwriting the name of the selafin file'
 # Build the X_array
-a = T3D_Xr(filename=slf_file, name=name, start_time=None, n_workers=nb_workers,
-                threads=threads_workers, memory_limit=RAM_limit
+a = T3D_Xr(filename=slf_file, name=name, start_time=None)
 path_to_zarr_store='/somewhere/on/my/Disk/My_zarr'
 # write it on disk
 T3D_Xr.write_array(path_to_zarr_store)
