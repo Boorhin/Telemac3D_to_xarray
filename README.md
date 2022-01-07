@@ -21,10 +21,6 @@ from datetime import datetime
 import Telemac3D_to_Xarray
 slf_file= 'somefile.slf'
 name = 'overwriting the name of the selafin file'
-#There is a bug in Telamac not outputting the starting date of models sometimes
-#start_time=datetime(year=1997,day=4, month=8,hour=2,minute=14)
-#Building up your Dask distribution. This is a bit experimental at the moment.
-nb_workers, threads_workers, RAM_limit=8, 2, '1GB')
 # Build the X_array
 a = T3D_Xr(filename=slf_file, name=name, start_time=None, n_workers=nb_workers,
                 threads=threads_workers, memory_limit=RAM_limit
