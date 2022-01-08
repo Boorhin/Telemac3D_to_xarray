@@ -18,7 +18,7 @@ Support from Telemac to provide the list of Selafin variables [has been asked bu
 
 ``` python
 from datetime import datetime
-import Telemac3D_to_Xarray
+from Telemac3D_to_Xarray import T3D_Xr
 slf_file= 'somefile.slf'
 name = 'overwriting the name of the selafin file'
 # Build the X_array
