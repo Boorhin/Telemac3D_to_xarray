@@ -179,17 +179,6 @@ class T3D_Xr:
                         np.zeros((len(self.times), self.slf.nplan, self.slf.npoin2)),
                         {'units':unit,
                         'standard_name':self.variables[i]})
-            self.ds.to_zarr(outfile, mode='a')
-            # logger.info('populate the variables')
-            for t in range(len(self.times)):
-                buff= from_array(self.slf.get_variables_at(t,self.var_idx.tolist()),
-                    chunks=(len(self.variables),self.slf.npoin2))
-                for i in range(len(self.var_idx)):
-                    self.ds[self.variables[i]].isel(time=t).values+=buff[i] \
-                        .compute().reshape(self.slf.nplan,-1)
-                self.ds.isel(time=t).to_zarr(outfile,
-                                    region={"time": t})
-            # logger.info('Xarray dataset built')
 
     def write_array(self, filename, force_overwrite=False):
         # logger.info('Writting Xarray dataset to zarr')
