@@ -176,7 +176,7 @@ class T3D_Xr:
             for i in range(len(self.var_idx)):
                 unit=self.slf.varunits[self.var_idx[i]].strip()
                 self.ds[self.variables[i]]=(('time','layer','node'),
-                        np.zeros((len(times), self.slf.nplan, self.slf.npoin2)),
+                        np.zeros((len(self.times), self.slf.nplan, self.slf.npoin2)),
                         {'units':unit,
                         'standard_name':var})
             self.ds.to_zarr(outfile, mode='a')
