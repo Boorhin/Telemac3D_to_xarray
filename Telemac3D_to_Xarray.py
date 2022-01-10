@@ -182,7 +182,7 @@ class T3D_Xr:
             self.ds.to_zarr(outfile, mode='a')
             # logger.info('populate the variables')
             for t in range(len(self.times)):
-                buff= from_array(self.slf.get_variables_at(t,var_idx.tolist()),
+                buff= from_array(self.slf.get_variables_at(t,self.var_idx.tolist()),
                     chunks=(len(self.variables),self.slf.npoin2))
                 for i in range(len(self.var_idx)):
                     self.ds[self.variables[i]].isel(time=t).values+=buff[i] \
