@@ -25,5 +25,5 @@ name = 'overwriting the name of the selafin file'
 a = T3D_Xr(filename=slf_file, name=name, start_time=None)
 path_to_zarr_store='/somewhere/on/my/Disk/My_zarr'
 # write it on disk
-T3D_Xr.write_array(path_to_zarr_store)
+a.write_array(path_to_zarr_store)
 ```
