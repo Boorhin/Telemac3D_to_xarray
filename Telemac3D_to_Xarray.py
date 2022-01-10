@@ -178,7 +178,7 @@ class T3D_Xr:
                 self.ds[self.variables[i]]=(('time','layer','node'),
                         np.zeros((len(self.times), self.slf.nplan, self.slf.npoin2)),
                         {'units':unit,
-                        'standard_name':var})
+                        'standard_name':self.variables[i]})
             self.ds.to_zarr(outfile, mode='a')
             # logger.info('populate the variables')
             for t in range(len(self.times)):
