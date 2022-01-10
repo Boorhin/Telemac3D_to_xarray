@@ -191,7 +191,11 @@ class T3D_Xr:
                                     region={"time": t})
             # logger.info('Xarray dataset built')
 
-    def write_array(self, filename):
+    def write_array(self, filename, force_overwrite=False):
         # logger.info('Writting Xarray dataset to zarr')
-        self.ds.to_zarr(filename)
+        if force_overwrite=False:
+            mode='w-'
+        else:
+            mode='w'
+        self.ds.to_zarr(filename, mode=mode, consolidated=True)
         # logger.info('zarr store completed')
