@@ -174,9 +174,12 @@ class T3D_Xr:
             # initialise the variable
             self.variables, self.var_idx = vardic(self.slf.varnames)
             for i in range(len(self.var_idx)):
+                buff=np.zeros((len(self.times), self.slf.nplan, self.slf.npoin2))
                 unit=self.slf.varunits[self.var_idx[i]].strip()
+                for t in range(len(self.times)):
+                    buff[t]=self.slf.get_variables_at(t,self.var_idx[i].tolist())
                 self.ds[self.variables[i]]=(('time','layer','node'),
-                        np.zeros((len(self.times), self.slf.nplan, self.slf.npoin2)),
+                        buff ,
                         {'units':unit,
                         'standard_name':self.variables[i]})
 
