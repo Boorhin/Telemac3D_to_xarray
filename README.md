@@ -21,9 +21,11 @@ from datetime import datetime
 from Telemac3D_to_Xarray import T3D_Xr
 slf_file= 'somefile.slf'
 name = 'overwriting the name of the selafin file'
+# overwrite selafin starting date if absent
+start_time=datetime(year=1997,month=8,day=29)
+#overwrite the default zarr store name somefile.slf.zarr
+store='my_store.zarr'
 # Build the X_array
-a = T3D_Xr(filename=slf_file, name=name, start_time=None)
-path_to_zarr_store='/somewhere/on/my/Disk/My_zarr'
-# write it on disk
-a.write_array(path_to_zarr_store)
+a = T3D_Xr(filename=slf_file, store=store, name=name, start_time=start_time)
+
 ```
