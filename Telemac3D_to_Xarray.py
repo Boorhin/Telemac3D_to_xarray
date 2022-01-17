@@ -4,6 +4,7 @@ import sys, os, logging
 from dask.array import from_array
 logger = logging.getLogger(__name__)
 import xarray as xr
+import zarr
 
 try:
     from data_manip.formats.selafin import Selafin
@@ -23,7 +24,7 @@ except ImportError:
         )
 
 class T3D_Xr:
-    def __init__(self, infile=None, outfile=None, name=None, start_time=None):
+    def __init__(self, filename=None, store=None,name=None, start_time=None):
                 # , n_workers=8, threads=2, memory_limit='1GB'):
             def vardic(vars_slf):
                 """
@@ -88,7 +89,7 @@ class T3D_Xr:
 
             self.name = name if name is not None else infile
             # logger.info('Opening dataset: %s' % filename)
-            self.slf = Selafin(infile)
+            self.slf = Selafin(filename)
 
             self.ds=create_array()
             self.ds.attrs['title']= self.slf.title
@@ -169,23 +170,38 @@ class T3D_Xr:
                     'cf_role': "volume_node_connectivity",
                     'long_name': "Maps every volume to its corner nodes.",
                     'start_index': 0})
-            #write zarr before populating variables
+            if store == None:
+                store=filename+'.zarr'
+            self.ds.to_zarr(store, mode='a') #write zarr before populating variables
+            print(datetime.now().strftime('Time %H-%M: ')+ \
+                'Zarr archive {} has been populated with dimensions and CF convention parameters'.format(filename+'.zarr'))
 
             # initialise the variable
             self.variables, self.var_idx = vardic(self.slf.varnames)
             for i in range(len(self.var_idx)):
-                buff=np.zeros((len(self.times), self.slf.nplan, self.slf.npoin2))
+                print(datetime.now().strftime('Time %H-%M: ')+'Processing variable {}'.format(self.variables[i]))
+                buff=np.zeros((len(self.times), self.slf.nplan, \
+                        self.slf.npoin2)) #from array too heavy....
                 unit=self.slf.varunits[self.var_idx[i]].strip()
                 for t in range(len(self.times)):
-                    buff[t]=self.slf.get_variables_at(t,self.var_idx[i].tolist())
-                self.ds[self.variables[i]]=(('time','layer','node'),
+                    buff[t]=self.slf.get_variables_at(t,[self.var_idx[i]]). \
+                        reshape((self.slf.nplan, self.slf.npoin2))
+                ds2=xr.Dataset({self.variables[i]:(('time','layer','node'),
                         buff ,
                         {'units':unit,
-                        'standard_name':self.variables[i]})
+                        'standard_name':self.variables[i]})})
+                print(datetime.now().strftime('Time %H-%M: ')+'\tVariable processed, writing zarr path...')
+                #self.ds=xr.merge([self.ds,ds2])
+                ds2.to_zarr(store, mode='a')
+                print(datetime.now().strftime('Time %H-%M: ')+'\tVariable written to zarr')
+                ds2.close()
+            print(datetime.now().strftime('Time %H-%M: ')+'All variable written, consolidating metadata')
+            zarr.consolidate_metadata(store)
+            print(datetime.now().strftime('Time %H-%M: ')+store+ ' ready to be uplaoded on a cloud.')
 
     def write_array(self, filename, force_overwrite=False):
         # logger.info('Writting Xarray dataset to zarr')
-        if force_overwrite=False:
+        if force_overwrite==False:
             mode='w-'
         else:
             mode='w'
